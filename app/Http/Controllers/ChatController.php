@@ -55,7 +55,7 @@ class ChatController extends Controller
         $response = $this->evolutionApi->sendText($conversation->contact_number, $request->message);
 
         // Save to database
-        Message::create([
+        $message = Message::create([
             'conversation_id' => $conversation->id,
             'sender_type' => 'user',
             'sender_id' => auth()->id(),
@@ -65,6 +65,28 @@ class ChatController extends Controller
         ]);
 
         $conversation->update(['last_message_at' => now()]);
+
+        // Send to N8N webhook if configured
+        $n8nWebhookUrl = \App\Models\Setting::get('n8n_webhook_url');
+        if ($n8nWebhookUrl) {
+            try {
+                \Http::post($n8nWebhookUrl, [
+                    'event' => 'message.sent',
+                    'conversation_id' => $conversation->id,
+                    'contact_number' => $conversation->contact_number,
+                    'contact_name' => $conversation->contact_name,
+                    'message' => $request->message,
+                    'sender' => auth()->user()->name,
+                    'sender_id' => auth()->id(),
+                    'timestamp' => now()->toIso8601String(),
+                ]);
+            } catch (\Exception $e) {
+                \Log::warning('Failed to send message to N8N webhook', [
+                    'error' => $e->getMessage(),
+                    'webhook_url' => $n8nWebhookUrl
+                ]);
+            }
+        }
 
         return back();
     }

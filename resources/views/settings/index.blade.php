@@ -86,6 +86,25 @@
                                 @enderror
                             </div>
 
+                            <!-- N8N Webhook URL -->
+                            <div>
+                                <label for="n8n_webhook_url" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    URL do Webhook N8N (Opcional)
+                                </label>
+                                <input type="url" 
+                                       name="n8n_webhook_url" 
+                                       id="n8n_webhook_url" 
+                                       value="{{ old('n8n_webhook_url', $settings['n8n_webhook_url']) }}"
+                                       class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                       placeholder="https://seu-n8n.com/webhook/enviar-mensagem">
+                                @error('n8n_webhook_url')
+                                    <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ $message }}</p>
+                                @enderror
+                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                    Configure a URL do webhook do N8N para onde as mensagens enviadas pelo chat serão encaminhadas
+                                </p>
+                            </div>
+
                             <!-- Action Buttons -->
                             <div class="flex items-center space-x-4 pt-4">
                                 <button type="submit" 
