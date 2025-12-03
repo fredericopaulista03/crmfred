@@ -1,9 +1,9 @@
 <x-app-layout>
-    <div class="h-screen flex overflow-hidden bg-gray-900">
+    <div class="h-screen flex overflow-hidden bg-gray-900" style="padding-top: 64px;">
         <!-- Sidebar - Conversations List -->
-        <div class="w-96 bg-gray-800 border-r border-gray-700 flex flex-col">
+        <div class="w-96 bg-gray-800 border-r border-gray-700 flex flex-col h-full">
             <!-- Header -->
-            <div class="bg-gray-800 p-4 border-b border-gray-700">
+            <div class="bg-gray-800 p-4 border-b border-gray-700 flex-shrink-0">
                 <h2 class="text-white font-semibold text-lg">Conversas</h2>
                 <p class="text-gray-400 text-sm">{{ $conversations->count() }} conversas</p>
             </div>
@@ -40,10 +40,10 @@
         </div>
 
         <!-- Chat Area -->
-        <div class="flex-1 flex flex-col">
+        <div class="flex-1 flex flex-col h-full">
             @if($selectedConversation)
                 <!-- Chat Header -->
-                <div class="bg-gray-800 p-4 border-b border-gray-700 flex items-center justify-between">
+                <div class="bg-gray-800 p-4 border-b border-gray-700 flex items-center justify-between flex-shrink-0">
                     <div class="flex items-center space-x-3">
                         <div class="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-white font-bold">
                             {{ strtoupper(substr($selectedConversation->contact_name ?? 'U', 0, 1)) }}
@@ -93,7 +93,7 @@
                 </div>
 
                 <!-- Message Input -->
-                <div class="bg-gray-800 p-4 border-t border-gray-700">
+                <div class="bg-gray-800 p-4 border-t border-gray-700 flex-shrink-0">
                     <form action="{{ route('chat.send') }}" method="POST" class="flex items-center space-x-3">
                         @csrf
                         <input type="hidden" name="conversation_id" value="{{ $selectedConversation->id }}">
