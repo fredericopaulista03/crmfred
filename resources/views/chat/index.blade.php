@@ -93,11 +93,60 @@
                 </div>
 
                 <!-- Message Input -->
-                <div class="bg-gray-800 p-4 border-t border-gray-700 flex-shrink-0" x-data="{ showEmoji: false, selectedFile: null, showAttachmentMenu: false }">
+                <div class="bg-gray-800 p-4 border-t border-gray-700 flex-shrink-0" x-data="{ showEmoji: false, selectedFile: null, showAttachmentMenu: false, imagePreviewUrl: null, messageBody: '' }">
                     <form action="{{ route('chat.send') }}" method="POST" enctype="multipart/form-data" class="flex items-center space-x-3">
                         @csrf
                         <input type="hidden" name="conversation_id" value="{{ $selectedConversation->id }}">
+                        <input type="hidden" name="message" :value="messageBody">
                         
+                        <!-- Image Preview Modal -->
+                        <div x-show="imagePreviewUrl" 
+                             style="display: none;"
+                             x-transition:enter="transition ease-out duration-300"
+                             x-transition:enter-start="opacity-0"
+                             x-transition:enter-end="opacity-100"
+                             x-transition:leave="transition ease-in duration-200"
+                             x-transition:leave-start="opacity-100"
+                             x-transition:leave-end="opacity-0"
+                             class="fixed inset-0 z-[100] bg-black bg-opacity-95 flex flex-col">
+                            
+                            <!-- Modal Header -->
+                            <div class="p-4 flex justify-between items-center">
+                                <button type="button" 
+                                        @click="selectedFile = null; imagePreviewUrl = null; document.getElementById('attachment').value = ''; messageBody = ''"
+                                        class="text-white hover:text-gray-300 transition">
+                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                                <div class="flex space-x-4 text-white">
+                                    <button type="button" class="hover:text-gray-300"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></button>
+                                    <button type="button" class="hover:text-gray-300"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>
+                                    <button type="button" class="hover:text-gray-300"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></button>
+                                </div>
+                            </div>
+
+                            <!-- Image Container -->
+                            <div class="flex-1 flex items-center justify-center p-4 overflow-hidden">
+                                <img :src="imagePreviewUrl" class="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl">
+                            </div>
+
+                            <!-- Caption Input Area -->
+                            <div class="p-4 bg-black bg-opacity-50 w-full max-w-4xl mx-auto mb-8 rounded-full flex items-center space-x-4">
+                                <div class="flex-1 relative">
+                                    <input type="text" 
+                                           x-model="messageBody"
+                                           class="w-full bg-transparent text-white placeholder-gray-400 border-0 focus:ring-0 text-lg"
+                                           placeholder="Adicione uma legenda...">
+                                </div>
+                                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white rounded-full p-3 transition transform hover:scale-105">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
                         <!-- Emoji Button -->
                         <div class="relative">
                             <button type="button" 
@@ -115,7 +164,7 @@
                                  class="absolute bottom-12 left-0 bg-gray-700 rounded-lg shadow-lg p-3 grid grid-cols-8 gap-2 w-80 max-h-64 overflow-y-auto z-50">
                                 <template x-for="emoji in ['😀','😃','😄','😁','😆','😅','🤣','😂','🙂','🙃','😉','😊','😇','🥰','😍','🤩','😘','😗','😚','😙','🥲','😋','😛','😜','🤪','😝','🤑','🤗','🤭','🤫','🤔','🤐','🤨','😐','😑','😶','😏','😒','🙄','😬','🤥','😌','😔','😪','🤤','😴','😷','🤒','🤕','🤢','🤮','🤧','🥵','🥶','🥴','😵','🤯','🤠','🥳','🥸','😎','🤓','🧐','😕','😟','🙁','☹️','😮','😯','😲','😳','🥺','😦','😧','😨','😰','😥','😢','😭','😱','😖','😣','😞','😓','😩','😫','🥱','😤','😡','😠','🤬','😈','👿','💀','☠️','💩','🤡','👹','👺','👻','👽','👾','🤖','😺','😸','😹','😻','😼','😽','🙀','😿','😾']">
                                     <button type="button" 
-                                            @click="document.querySelector('input[name=message]').value += emoji; showEmoji = false"
+                                            @click="messageBody += emoji; showEmoji = false"
                                             class="text-2xl hover:bg-gray-600 rounded p-1 transition"
                                             x-text="emoji"></button>
                                 </template>
@@ -129,7 +178,18 @@
                                    id="attachment" 
                                    class="hidden"
                                    accept="image/*,video/*,audio/*,.pdf,.doc,.docx"
-                                   @change="selectedFile = $event.target.files[0]; showAttachmentMenu = false">
+                                   @change="
+                                        const file = $event.target.files[0];
+                                        selectedFile = file;
+                                        showAttachmentMenu = false;
+                                        if (file && file.type.startsWith('image/')) {
+                                            const reader = new FileReader();
+                                            reader.onload = (e) => { imagePreviewUrl = e.target.result; };
+                                            reader.readAsDataURL(file);
+                                        } else {
+                                            imagePreviewUrl = null;
+                                        }
+                                   ">
                             
                             <button type="button" 
                                     @click="showAttachmentMenu = !showAttachmentMenu; showEmoji = false"
@@ -247,20 +307,20 @@
                         <!-- Message Input -->
                         <div class="flex-1 relative">
                             <input type="text" 
-                                   name="message" 
+                                   x-model="messageBody"
                                    placeholder="Digite sua mensagem..." 
                                    class="w-full bg-gray-700 text-white rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-600 border-0"
                                    :required="!selectedFile">
                             
-                            <!-- File Preview -->
-                            <div x-show="selectedFile" 
+                            <!-- File Preview (Small) - Only show if NO image preview (e.g. docs) -->
+                            <div x-show="selectedFile && !imagePreviewUrl" 
                                  class="absolute -top-16 left-0 bg-gray-700 rounded-lg p-2 flex items-center space-x-2">
                                 <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                 </svg>
                                 <span class="text-sm text-white" x-text="selectedFile ? selectedFile.name : ''"></span>
                                 <button type="button" 
-                                        @click="selectedFile = null; document.getElementById('attachment').value = ''"
+                                        @click="selectedFile = null; document.getElementById('attachment').value = ''; messageBody = ''"
                                         class="text-red-400 hover:text-red-300">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
