@@ -15,21 +15,29 @@ class WebhookController extends Controller
         
         // Log the webhook for debugging
         $webhookLog = WebhookLog::create([
-            'event_type' => $data['event'] ?? 'unknown',
+            'event_type' => $data['event'] ?? 'messages.upsert',
             'payload' => json_encode($data),
             'status' => 'received',
         ]);
 
         \Log::info('Evolution Webhook Received', [
             'log_id' => $webhookLog->id,
-            'event' => $data['event'] ?? 'unknown',
+            'event' => $data['event'] ?? 'auto-detected',
             'data' => $data
         ]);
 
         try {
+            // If event field exists, use it. Otherwise, auto-detect based on payload
+            $event = $data['event'] ?? null;
+            
+            // Auto-detect: if has sender and message, it's a message.upsert
+            if (!$event && isset($data['sender']) && isset($data['message'])) {
+                $event = 'messages.upsert';
+            }
+
             // Handle different event types
-            if (isset($data['event'])) {
-                switch ($data['event']) {
+            if ($event) {
+                switch ($event) {
                     case 'messages.upsert':
                         $this->handleIncomingMessage($data, $webhookLog);
                         break;
@@ -39,9 +47,14 @@ class WebhookController extends Controller
                     default:
                         $webhookLog->update([
                             'status' => 'ignored',
-                            'error_message' => 'Event type not handled: ' . $data['event']
+                            'error_message' => 'Event type not handled: ' . $event
                         ]);
                 }
+            } else {
+                $webhookLog->update([
+                    'status' => 'error',
+                    'error_message' => 'Could not determine event type from payload'
+                ]);
             }
 
             return response()->json(['status' => 'success', 'log_id' => $webhookLog->id]);
@@ -76,7 +89,8 @@ class WebhookController extends Controller
             return; // Ignore messages sent by us
         }
 
-        $messageData = $data['data'];
+        // Support both full payload and simplified N8N payload
+        $messageData = $data['data'] ?? [];
         
         // Get contact number - try multiple possible locations
         $contactNumber = $data['sender'] ?? $messageData['key']['remoteJid'] ?? null;
@@ -94,47 +108,64 @@ class WebhookController extends Controller
             return;
         }
 
+        // Get contact name
+        $contactName = $messageData['pushName'] ?? $data['pushName'] ?? 'Desconhecido';
+
         // Find or create conversation
         $conversation = Conversation::firstOrCreate(
             ['contact_number' => $contactNumber],
             [
-                'contact_name' => $messageData['pushName'] ?? 'Desconhecido',
+                'contact_name' => $contactName,
                 'last_message_at' => now(),
             ]
         );
 
         // Update contact name if it changed
-        if (isset($messageData['pushName']) && $messageData['pushName'] !== $conversation->contact_name) {
-            $conversation->update(['contact_name' => $messageData['pushName']]);
+        if ($contactName !== 'Desconhecido' && $contactName !== $conversation->contact_name) {
+            $conversation->update(['contact_name' => $contactName]);
         }
 
-        // Extract message content based on messageType
-        $messageType = $messageData['messageType'] ?? 'text';
+        // Extract message content - support both structures
+        $messageType = 'text';
         $messageBody = '';
         $mediaUrl = null;
 
-        // Handle different message types
-        if (isset($messageData['message']['conversation'])) {
+        // Check if message is in root level (N8N simplified format)
+        if (isset($data['message']) && is_string($data['message'])) {
             $messageType = 'text';
-            $messageBody = $messageData['message']['conversation'];
-        } elseif (isset($messageData['message']['extendedTextMessage'])) {
-            $messageType = 'text';
-            $messageBody = $messageData['message']['extendedTextMessage']['text'] ?? '';
-        } elseif (isset($messageData['message']['imageMessage'])) {
-            $messageType = 'image';
-            $messageBody = $messageData['message']['imageMessage']['caption'] ?? '';
-            $mediaUrl = $messageData['message']['imageMessage']['url'] ?? null;
-        } elseif (isset($messageData['message']['audioMessage'])) {
-            $messageType = 'audio';
-            $mediaUrl = $messageData['message']['audioMessage']['url'] ?? null;
-        } elseif (isset($messageData['message']['documentMessage'])) {
-            $messageType = 'document';
-            $messageBody = $messageData['message']['documentMessage']['fileName'] ?? '';
-            $mediaUrl = $messageData['message']['documentMessage']['url'] ?? null;
-        } elseif (isset($messageData['message']['videoMessage'])) {
-            $messageType = 'image'; // Using image type for video for now
-            $messageBody = $messageData['message']['videoMessage']['caption'] ?? '';
-            $mediaUrl = $messageData['message']['videoMessage']['url'] ?? null;
+            $messageBody = $data['message'];
+        }
+        // Check if message is in data.message (full Evolution API format)
+        elseif (isset($messageData['message'])) {
+            $message = $messageData['message'];
+            
+            if (isset($message['conversation'])) {
+                $messageType = 'text';
+                $messageBody = $message['conversation'];
+            } elseif (isset($message['extendedTextMessage'])) {
+                $messageType = 'text';
+                $messageBody = $message['extendedTextMessage']['text'] ?? '';
+            } elseif (isset($message['imageMessage'])) {
+                $messageType = 'image';
+                $messageBody = $message['imageMessage']['caption'] ?? '';
+                $mediaUrl = $message['imageMessage']['url'] ?? null;
+            } elseif (isset($message['audioMessage'])) {
+                $messageType = 'audio';
+                $mediaUrl = $message['audioMessage']['url'] ?? null;
+            } elseif (isset($message['documentMessage'])) {
+                $messageType = 'document';
+                $messageBody = $message['documentMessage']['fileName'] ?? '';
+                $mediaUrl = $message['documentMessage']['url'] ?? null;
+            } elseif (isset($message['videoMessage'])) {
+                $messageType = 'image'; // Using image type for video for now
+                $messageBody = $message['videoMessage']['caption'] ?? '';
+                $mediaUrl = $message['videoMessage']['url'] ?? null;
+            }
+        }
+
+        // If still no message body, try to get from messageType field
+        if (empty($messageBody) && isset($messageData['messageType'])) {
+            $messageType = $messageData['messageType'];
         }
 
         // Save message
@@ -165,7 +196,8 @@ class WebhookController extends Controller
             'message_id' => $message->id,
             'message_type' => $messageType,
             'contact_number' => $contactNumber,
-            'contact_name' => $messageData['pushName'] ?? 'Unknown'
+            'contact_name' => $contactName,
+            'message_body' => $messageBody
         ]);
     }
 
