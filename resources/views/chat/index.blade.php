@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="h-screen flex overflow-hidden bg-gray-900" >
+    <div class="flex overflow-hidden bg-gray-900" style="height: 90vh;">
         <!-- Sidebar - Conversations List -->
         <div class="w-96 bg-gray-800 border-r border-gray-700 flex flex-col h-full">
             <!-- Header -->
