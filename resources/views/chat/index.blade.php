@@ -148,98 +148,98 @@
                                  x-transition:leave="transition ease-in duration-150"
                                  x-transition:leave-start="opacity-100 transform translate-y-0"
                                  x-transition:leave-end="opacity-0 transform translate-y-2"
-                                 class="absolute bottom-12 left-0 bg-gray-800 rounded-lg shadow-2xl p-3 w-64 z-50 border border-gray-700">
+                                 class="absolute bottom-12 left-0 bg-gray-800 rounded-lg shadow-2xl p-2 w-56 z-50 border border-gray-700">
                                 
                                 <!-- Documento -->
                                 <button type="button" 
                                         @click="document.getElementById('attachment').setAttribute('accept', '.pdf,.doc,.docx,.txt,.xls,.xlsx'); document.getElementById('attachment').click()"
-                                        class="w-full flex items-center space-x-3 p-3 hover:bg-gray-700 rounded-lg transition group">
-                                    <div class="w-12 h-12 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0">
-                                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        class="w-full flex items-center space-x-3 p-2 hover:bg-gray-700 rounded-lg transition group">
+                                    <div class="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/>
                                         </svg>
                                     </div>
-                                    <span class="text-white font-medium">Documento</span>
+                                    <span class="text-white text-sm">Documento</span>
                                 </button>
 
                                 <!-- Fotos e vídeos -->
                                 <button type="button" 
                                         @click="document.getElementById('attachment').setAttribute('accept', 'image/*,video/*'); document.getElementById('attachment').click()"
-                                        class="w-full flex items-center space-x-3 p-3 hover:bg-gray-700 rounded-lg transition group">
-                                    <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
-                                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        class="w-full flex items-center space-x-3 p-2 hover:bg-gray-700 rounded-lg transition group">
+                                    <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/>
                                         </svg>
                                     </div>
-                                    <span class="text-white font-medium">Fotos e vídeos</span>
+                                    <span class="text-white text-sm">Fotos e vídeos</span>
                                 </button>
 
                                 <!-- Câmera -->
                                 <button type="button" 
                                         @click="document.getElementById('attachment').setAttribute('accept', 'image/*'); document.getElementById('attachment').setAttribute('capture', 'camera'); document.getElementById('attachment').click()"
-                                        class="w-full flex items-center space-x-3 p-3 hover:bg-gray-700 rounded-lg transition group">
-                                    <div class="w-12 h-12 rounded-full bg-pink-600 flex items-center justify-center flex-shrink-0">
-                                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        class="w-full flex items-center space-x-3 p-2 hover:bg-gray-700 rounded-lg transition group">
+                                    <div class="w-10 h-10 rounded-full bg-pink-600 flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
                                         </svg>
                                     </div>
-                                    <span class="text-white font-medium">Câmera</span>
+                                    <span class="text-white text-sm">Câmera</span>
                                 </button>
 
                                 <!-- Áudio -->
                                 <button type="button" 
                                         @click="document.getElementById('attachment').setAttribute('accept', 'audio/*'); document.getElementById('attachment').click()"
-                                        class="w-full flex items-center space-x-3 p-3 hover:bg-gray-700 rounded-lg transition group">
-                                    <div class="w-12 h-12 rounded-full bg-orange-600 flex items-center justify-center flex-shrink-0">
-                                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        class="w-full flex items-center space-x-3 p-2 hover:bg-gray-700 rounded-lg transition group">
+                                    <div class="w-10 h-10 rounded-full bg-orange-600 flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                                             <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z"/>
                                         </svg>
                                     </div>
-                                    <span class="text-white font-medium">Áudio</span>
+                                    <span class="text-white text-sm">Áudio</span>
                                 </button>
 
                                 <!-- Contato -->
                                 <button type="button" 
-                                        class="w-full flex items-center space-x-3 p-3 hover:bg-gray-700 rounded-lg transition group opacity-50 cursor-not-allowed">
-                                    <div class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-                                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        class="w-full flex items-center space-x-3 p-2 hover:bg-gray-700 rounded-lg transition group opacity-50 cursor-not-allowed">
+                                    <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
                                         </svg>
                                     </div>
-                                    <span class="text-white font-medium">Contato</span>
+                                    <span class="text-white text-sm">Contato</span>
                                 </button>
 
                                 <!-- Enquete -->
                                 <button type="button" 
-                                        class="w-full flex items-center space-x-3 p-3 hover:bg-gray-700 rounded-lg transition group opacity-50 cursor-not-allowed">
-                                    <div class="w-12 h-12 rounded-full bg-yellow-600 flex items-center justify-center flex-shrink-0">
-                                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        class="w-full flex items-center space-x-3 p-2 hover:bg-gray-700 rounded-lg transition group opacity-50 cursor-not-allowed">
+                                    <div class="w-10 h-10 rounded-full bg-yellow-600 flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                                             <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/>
                                         </svg>
                                     </div>
-                                    <span class="text-white font-medium">Enquete</span>
+                                    <span class="text-white text-sm">Enquete</span>
                                 </button>
 
                                 <!-- Evento -->
                                 <button type="button" 
-                                        class="w-full flex items-center space-x-3 p-3 hover:bg-gray-700 rounded-lg transition group opacity-50 cursor-not-allowed">
-                                    <div class="w-12 h-12 rounded-full bg-pink-500 flex items-center justify-center flex-shrink-0">
-                                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        class="w-full flex items-center space-x-3 p-2 hover:bg-gray-700 rounded-lg transition group opacity-50 cursor-not-allowed">
+                                    <div class="w-10 h-10 rounded-full bg-pink-500 flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
                                         </svg>
                                     </div>
-                                    <span class="text-white font-medium">Evento</span>
+                                    <span class="text-white text-sm">Evento</span>
                                 </button>
 
                                 <!-- Nova figurinha -->
                                 <button type="button" 
-                                        class="w-full flex items-center space-x-3 p-3 hover:bg-gray-700 rounded-lg transition group opacity-50 cursor-not-allowed">
-                                    <div class="w-12 h-12 rounded-full bg-teal-600 flex items-center justify-center flex-shrink-0">
-                                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        class="w-full flex items-center space-x-3 p-2 hover:bg-gray-700 rounded-lg transition group opacity-50 cursor-not-allowed">
+                                    <div class="w-10 h-10 rounded-full bg-teal-600 flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 100-2 1 1 0 000 2zm7-1a1 1 0 11-2 0 1 1 0 012 0zm-.464 5.535a1 1 0 10-1.415-1.414 3 3 0 01-4.242 0 1 1 0 00-1.415 1.414 5 5 0 007.072 0z" clip-rule="evenodd"/>
                                         </svg>
                                     </div>
-                                    <span class="text-white font-medium">Nova figurinha</span>
+                                    <span class="text-white text-sm">Nova figurinha</span>
                                 </button>
                             </div>
                         </div>
