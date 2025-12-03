@@ -67,33 +67,59 @@ class WebhookController extends Controller
 
     protected function handleIncomingMessage($data, $webhookLog)
     {
-        if (!isset($data['data']['key']['fromMe']) || $data['data']['key']['fromMe']) {
+        // Check if message is from us (fromMe = true)
+        if (isset($data['data']['key']['fromMe']) && $data['data']['key']['fromMe']) {
+            $webhookLog->update([
+                'status' => 'ignored',
+                'error_message' => 'Message sent by us (fromMe=true)'
+            ]);
             return; // Ignore messages sent by us
         }
 
         $messageData = $data['data'];
-        $contactNumber = $messageData['key']['remoteJid'] ?? null;
+        
+        // Get contact number - try multiple possible locations
+        $contactNumber = $data['sender'] ?? $messageData['key']['remoteJid'] ?? null;
+        
+        // Clean the contact number (remove @s.whatsapp.net if present)
+        if ($contactNumber) {
+            $contactNumber = str_replace('@s.whatsapp.net', '', $contactNumber);
+        }
 
-        if (!$contactNumber) return;
+        if (!$contactNumber) {
+            $webhookLog->update([
+                'status' => 'error',
+                'error_message' => 'Contact number not found in payload'
+            ]);
+            return;
+        }
 
         // Find or create conversation
         $conversation = Conversation::firstOrCreate(
             ['contact_number' => $contactNumber],
             [
-                'contact_name' => $messageData['pushName'] ?? 'Unknown',
+                'contact_name' => $messageData['pushName'] ?? 'Desconhecido',
                 'last_message_at' => now(),
             ]
         );
 
-        // Extract message content
-        $messageType = 'text';
+        // Update contact name if it changed
+        if (isset($messageData['pushName']) && $messageData['pushName'] !== $conversation->contact_name) {
+            $conversation->update(['contact_name' => $messageData['pushName']]);
+        }
+
+        // Extract message content based on messageType
+        $messageType = $messageData['messageType'] ?? 'text';
         $messageBody = '';
         $mediaUrl = null;
 
+        // Handle different message types
         if (isset($messageData['message']['conversation'])) {
+            $messageType = 'text';
             $messageBody = $messageData['message']['conversation'];
         } elseif (isset($messageData['message']['extendedTextMessage'])) {
-            $messageBody = $messageData['message']['extendedTextMessage']['text'];
+            $messageType = 'text';
+            $messageBody = $messageData['message']['extendedTextMessage']['text'] ?? '';
         } elseif (isset($messageData['message']['imageMessage'])) {
             $messageType = 'image';
             $messageBody = $messageData['message']['imageMessage']['caption'] ?? '';
@@ -105,10 +131,14 @@ class WebhookController extends Controller
             $messageType = 'document';
             $messageBody = $messageData['message']['documentMessage']['fileName'] ?? '';
             $mediaUrl = $messageData['message']['documentMessage']['url'] ?? null;
+        } elseif (isset($messageData['message']['videoMessage'])) {
+            $messageType = 'image'; // Using image type for video for now
+            $messageBody = $messageData['message']['videoMessage']['caption'] ?? '';
+            $mediaUrl = $messageData['message']['videoMessage']['url'] ?? null;
         }
 
         // Save message
-        Message::create([
+        $message = Message::create([
             'conversation_id' => $conversation->id,
             'sender_type' => 'contact',
             'type' => $messageType,
@@ -132,7 +162,10 @@ class WebhookController extends Controller
         \Log::info('Message processed successfully', [
             'log_id' => $webhookLog->id,
             'conversation_id' => $conversation->id,
-            'message_type' => $messageType
+            'message_id' => $message->id,
+            'message_type' => $messageType,
+            'contact_number' => $contactNumber,
+            'contact_name' => $messageData['pushName'] ?? 'Unknown'
         ]);
     }
 
