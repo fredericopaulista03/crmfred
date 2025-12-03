@@ -25,6 +25,9 @@
                         <x-nav-link :href="route('settings.index')" :active="request()->routeIs('settings.*')">
                             {{ __('Configurações') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('webhook-debug.index')" :active="request()->routeIs('webhook-debug.*')">
+                            {{ __('Webhook Debug') }}
+                        </x-nav-link>
                     @endif
                 </div>
             </div>

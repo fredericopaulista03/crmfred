@@ -5,6 +5,7 @@ use App\Http\Controllers\KanbanController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\WebhookController;
+use App\Http\Controllers\WebhookDebugController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -35,6 +36,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index')->middleware('role:admin');
     Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update')->middleware('role:admin');
     Route::post('/settings/test', [SettingsController::class, 'testConnection'])->name('settings.test')->middleware('role:admin');
+
+    // Webhook Debug Routes
+    Route::get('/webhook-debug', [WebhookDebugController::class, 'index'])->name('webhook-debug.index')->middleware('role:admin');
+    Route::get('/webhook-debug/{id}', [WebhookDebugController::class, 'show'])->name('webhook-debug.show')->middleware('role:admin');
+    Route::delete('/webhook-debug/clear', [WebhookDebugController::class, 'clear'])->name('webhook-debug.clear')->middleware('role:admin');
 });
 
 require __DIR__.'/auth.php';

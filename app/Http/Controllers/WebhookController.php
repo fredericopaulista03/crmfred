@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Conversation;
 use App\Models\Message;
+use App\Models\WebhookLog;
 use Illuminate\Http\Request;
 
 class WebhookController extends Controller
@@ -11,24 +12,60 @@ class WebhookController extends Controller
     public function evolution(Request $request)
     {
         $data = $request->all();
-        \Log::info('Evolution Webhook Received', $data);
+        
+        // Log the webhook for debugging
+        $webhookLog = WebhookLog::create([
+            'event_type' => $data['event'] ?? 'unknown',
+            'payload' => json_encode($data),
+            'status' => 'received',
+        ]);
 
-        // Handle different event types
-        if (isset($data['event'])) {
-            switch ($data['event']) {
-                case 'messages.upsert':
-                    $this->handleIncomingMessage($data);
-                    break;
-                case 'messages.update':
-                    $this->handleMessageUpdate($data);
-                    break;
+        \Log::info('Evolution Webhook Received', [
+            'log_id' => $webhookLog->id,
+            'event' => $data['event'] ?? 'unknown',
+            'data' => $data
+        ]);
+
+        try {
+            // Handle different event types
+            if (isset($data['event'])) {
+                switch ($data['event']) {
+                    case 'messages.upsert':
+                        $this->handleIncomingMessage($data, $webhookLog);
+                        break;
+                    case 'messages.update':
+                        $this->handleMessageUpdate($data, $webhookLog);
+                        break;
+                    default:
+                        $webhookLog->update([
+                            'status' => 'ignored',
+                            'error_message' => 'Event type not handled: ' . $data['event']
+                        ]);
+                }
             }
-        }
 
-        return response()->json(['status' => 'success']);
+            return response()->json(['status' => 'success', 'log_id' => $webhookLog->id]);
+        } catch (\Exception $e) {
+            $webhookLog->update([
+                'status' => 'error',
+                'error_message' => $e->getMessage()
+            ]);
+
+            \Log::error('Webhook Processing Error', [
+                'log_id' => $webhookLog->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+                'log_id' => $webhookLog->id
+            ], 500);
+        }
     }
 
-    protected function handleIncomingMessage($data)
+    protected function handleIncomingMessage($data, $webhookLog)
     {
         if (!isset($data['data']['key']['fromMe']) || $data['data']['key']['fromMe']) {
             return; // Ignore messages sent by us
@@ -85,9 +122,21 @@ class WebhookController extends Controller
             'last_message_at' => now(),
             'unread_count' => $conversation->unread_count + 1,
         ]);
+
+        // Mark webhook as processed
+        $webhookLog->update([
+            'status' => 'processed',
+            'processed' => true
+        ]);
+
+        \Log::info('Message processed successfully', [
+            'log_id' => $webhookLog->id,
+            'conversation_id' => $conversation->id,
+            'message_type' => $messageType
+        ]);
     }
 
-    protected function handleMessageUpdate($data)
+    protected function handleMessageUpdate($data, $webhookLog)
     {
         // Handle message status updates (delivered, read)
         // Implementation depends on Evolution API structure
