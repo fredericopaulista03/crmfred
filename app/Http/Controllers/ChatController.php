@@ -72,6 +72,7 @@ class ChatController extends Controller
             try {
                 \Http::post($n8nWebhookUrl, [
                     'event' => 'message.sent',
+                    'instance' => \App\Models\Setting::get('evolution_instance_name', 'default'),
                     'conversation_id' => $conversation->id,
                     'contact_number' => $conversation->contact_number,
                     'contact_name' => $conversation->contact_name,
