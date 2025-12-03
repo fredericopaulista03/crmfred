@@ -46,21 +46,55 @@ class ChatController extends Controller
     {
         $request->validate([
             'conversation_id' => 'required|exists:conversations,id',
-            'message' => 'required',
+            'message' => 'required_without:attachment',
+            'attachment' => 'nullable|file|max:10240', // 10MB max
         ]);
 
         $conversation = Conversation::findOrFail($request->conversation_id);
+        
+        $messageType = 'text';
+        $messageBody = $request->message ?? '';
+        $mediaUrl = null;
 
-        // Send via Evolution API
-        $response = $this->evolutionApi->sendText($conversation->contact_number, $request->message);
+        // Handle file attachment
+        if ($request->hasFile('attachment')) {
+            $file = $request->file('attachment');
+            $path = $file->store('chat-attachments', 'public');
+            $mediaUrl = asset('storage/' . $path);
+            
+            // Determine message type based on file mime type
+            $mimeType = $file->getMimeType();
+            if (str_starts_with($mimeType, 'image/')) {
+                $messageType = 'image';
+            } elseif (str_starts_with($mimeType, 'audio/')) {
+                $messageType = 'audio';
+            } elseif (str_starts_with($mimeType, 'video/')) {
+                $messageType = 'image'; // Using image type for video
+            } else {
+                $messageType = 'document';
+            }
+            
+            // If no message text, use filename
+            if (empty($messageBody)) {
+                $messageBody = $file->getClientOriginalName();
+            }
+        }
+
+        // Send via Evolution API only if it's a text message
+        if ($messageType === 'text') {
+            $response = $this->evolutionApi->sendText($conversation->contact_number, $messageBody);
+        }
+        // For media, you might need to use sendMedia method
+        // $this->evolutionApi->sendMedia($conversation->contact_number, $mediaUrl, $messageType, $messageBody);
 
         // Save to database
         $message = Message::create([
             'conversation_id' => $conversation->id,
             'sender_type' => 'user',
             'sender_id' => auth()->id(),
-            'type' => 'text',
-            'body' => $request->message,
+            'type' => $messageType,
+            'body' => $messageBody,
+            'media_url' => $mediaUrl,
             'status' => 'sent',
         ]);
 
@@ -76,7 +110,9 @@ class ChatController extends Controller
                     'conversation_id' => $conversation->id,
                     'contact_number' => $conversation->contact_number,
                     'contact_name' => $conversation->contact_name,
-                    'message' => $request->message,
+                    'message' => $messageBody,
+                    'message_type' => $messageType,
+                    'media_url' => $mediaUrl,
                     'sender' => auth()->user()->name,
                     'sender_id' => auth()->id(),
                     'timestamp' => now()->toIso8601String(),
